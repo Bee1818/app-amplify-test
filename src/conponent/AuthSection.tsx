@@ -3,13 +3,22 @@ import { signIn, signOut, getCurrentUser } from 'aws-amplify/auth';
 
 export default function AuthSection() {
   const [user, setUser] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleSignIn() {
     const username = window.prompt("Username (email):");
     const password = window.prompt("password:");
-    if (username && password) {
-      await signIn({ username, password });
-      setUser(await getCurrentUser());
+    if (!username || !password) return;
+
+    try {
+      const res = await signIn({ username, password });
+      console.log('signIn result:', res);
+      const currentUser = await getCurrentUser();
+      setUser(currentUser);
+      setError(null);
+    } catch (err: any) {
+      console.error('sign in error:', err);
+      setError(err.message || 'ログインに失敗しました。');
     }
   }
 
@@ -28,6 +37,7 @@ export default function AuthSection() {
     ):(
       <button onClick={handleSignIn}>Sign In</button>
     )}
+    {error && <p style={{ color: "red" }}>{error}</p>}
     </>
   );
 }

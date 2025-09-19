@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { signIn, signOut, getCurrentUser } from 'aws-amplify/auth';
+import { signIn, signOut, getCurrentUser, confirmSignIn } from 'aws-amplify/auth';
 
 export default function AuthSection() {
   const [user, setUser] = useState<any>(null);
@@ -13,6 +13,15 @@ export default function AuthSection() {
     try {
       const res = await signIn({ username, password });
       console.log('signIn result:', res);
+
+      if (res.nextStep.signInStep === 'CONFIRM_SIGN_IN_WITH_NEW_PASSWORD_REQUIRED') {
+        const newPassword = window.prompt('新しいパスワードを設定してください:');
+        if (newPassword) {
+          await confirmSignIn({ challengeResponse: newPassword });
+          alert("パスワード成功。再度ログインしてください。");
+        }
+      }
+
       const currentUser = await getCurrentUser();
       setUser(currentUser);
       setError(null);
